@@ -1,77 +1,100 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Plus, 
-  Edit3, 
-  Trash2, 
-  Eye, 
-  EyeOff, 
-  Save, 
-  X, 
+import {
+  Plus,
+  Edit3,
+  Trash2,
+  Eye,
+  EyeOff,
+  Save,
+  X,
   Star,
   Clock,
   DollarSign,
   User,
-  BookOpen
+  BookOpen,
+  RefreshCw
 } from 'lucide-react';
+import { coursesService } from '../../lib/supabase';
 
 interface Course {
   id: number;
   title: string;
-  titleEn: string;
+  title_en?: string;
   description: string;
-  descriptionEn: string;
+  description_en?: string;
   duration: string;
-  durationEn: string;
-  level: string;
-  levelEn: string;
-  price: number;
-  currency: string;
-  showPrice: boolean;
-  image: string;
-  features: string[];
-  featuresEn: string[];
+  duration_en?: string;
+  level_name: string;
+  level_name_en?: string;
+  price?: number;
+  currency?: string;
+  show_price?: boolean;
+  image_url?: string;
+  features?: string[];
+  features_en?: string[];
   instructor: string;
-  instructorEn: string;
+  instructor_en?: string;
   category: string;
-  categoryEn: string;
-  enrollmentUrl: string;
-  visible: boolean;
-  featured: boolean;
+  category_en?: string;
+  enrollment_url?: string;
+  visible?: boolean;
+  featured?: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface CoursesSettingsProps {
-  data: Course[];
-  onUpdate: (courses: Course[]) => void;
+  // لا نحتاج props بعد الآن - سنحمل البيانات من قاعدة البيانات مباشرة
 }
 
-const CoursesSettings: React.FC<CoursesSettingsProps> = ({ data, onUpdate }) => {
+const CoursesSettings: React.FC<CoursesSettingsProps> = () => {
+  const [data, setData] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
+  // تحميل البيانات من قاعدة البيانات
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const courses = await coursesService.getAll();
+      setData(courses);
+      console.log('✅ تم تحميل الدورات من قاعدة البيانات:', courses.length);
+    } catch (error) {
+      console.error('❌ خطأ في تحميل الدورات:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // دورة فارغة للإضافة الجديدة
   const getEmptyCourse = (): Course => ({
-    id: Date.now(),
+    id: 0, // سيتم تعيينه من قاعدة البيانات
     title: '',
-    titleEn: '',
+    title_en: '',
     description: '',
-    descriptionEn: '',
+    description_en: '',
     duration: '',
-    durationEn: '',
-    level: 'مبتدئ',
-    levelEn: 'Beginner',
+    duration_en: '',
+    level_name: 'مبتدئ',
+    level_name_en: 'Beginner',
     price: 0,
-    currency: 'ريال',
-    showPrice: true,
-    image: '',
+    currency: 'ريال سعودي',
+    show_price: true,
+    image_url: '',
     features: [''],
-    featuresEn: [''],
+    features_en: [''],
     instructor: '',
-    instructorEn: '',
+    instructor_en: '',
     category: 'رسم تقليدي',
-    categoryEn: 'Traditional Drawing',
-    enrollmentUrl: '',
+    category_en: 'Traditional Drawing',
+    enrollment_url: '',
     visible: true,
     featured: false
   });
@@ -86,37 +109,81 @@ const CoursesSettings: React.FC<CoursesSettingsProps> = ({ data, onUpdate }) => 
     setIsAddingNew(false);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!editingCourse) return;
 
-    if (isAddingNew) {
-      onUpdate([...data, editingCourse]);
-    } else {
-      onUpdate(data.map(course => 
-        course.id === editingCourse.id ? editingCourse : course
-      ));
-    }
+    try {
+      if (isAddingNew) {
+        console.log('🔄 جاري إضافة دورة جديدة...');
+        const { id, created_at, updated_at, ...courseData } = editingCourse;
+        const newCourse = await coursesService.create(courseData);
+        if (newCourse) {
+          console.log('✅ تم إضافة الدورة بنجاح');
+          await loadData(); // إعادة تحميل البيانات
+        }
+      } else {
+        console.log('🔄 جاري تحديث الدورة...');
+        const updatedCourse = await coursesService.update(editingCourse.id, editingCourse);
+        if (updatedCourse) {
+          console.log('✅ تم تحديث الدورة بنجاح');
+          await loadData(); // إعادة تحميل البيانات
+        }
+      }
 
-    setEditingCourse(null);
-    setIsAddingNew(false);
+      setEditingCourse(null);
+      setIsAddingNew(false);
+    } catch (error) {
+      console.error('❌ خطأ في حفظ الدورة:', error);
+      alert('حدث خطأ في حفظ الدورة');
+    }
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: number) => {
     if (confirm('هل أنت متأكد من حذف هذه الدورة؟')) {
-      onUpdate(data.filter(course => course.id !== id));
+      try {
+        console.log('🔄 جاري حذف الدورة...');
+        const success = await coursesService.delete(id);
+        if (success) {
+          console.log('✅ تم حذف الدورة بنجاح');
+          await loadData(); // إعادة تحميل البيانات
+        }
+      } catch (error) {
+        console.error('❌ خطأ في حذف الدورة:', error);
+        alert('حدث خطأ في حذف الدورة');
+      }
     }
   };
 
-  const toggleVisibility = (id: number) => {
-    onUpdate(data.map(course => 
-      course.id === id ? { ...course, visible: !course.visible } : course
-    ));
+  const toggleVisibility = async (id: number) => {
+    try {
+      const course = data.find(c => c.id === id);
+      if (course) {
+        console.log('🔄 جاري تغيير حالة الرؤية...');
+        const updated = await coursesService.update(id, { visible: !course.visible });
+        if (updated) {
+          console.log('✅ تم تغيير حالة الرؤية بنجاح');
+          await loadData(); // إعادة تحميل البيانات
+        }
+      }
+    } catch (error) {
+      console.error('❌ خطأ في تغيير حالة الرؤية:', error);
+    }
   };
 
-  const toggleFeatured = (id: number) => {
-    onUpdate(data.map(course => 
-      course.id === id ? { ...course, featured: !course.featured } : course
-    ));
+  const toggleFeatured = async (id: number) => {
+    try {
+      const course = data.find(c => c.id === id);
+      if (course) {
+        console.log('🔄 جاري تغيير حالة المميز...');
+        const updated = await coursesService.update(id, { featured: !course.featured });
+        if (updated) {
+          console.log('✅ تم تغيير حالة المميز بنجاح');
+          await loadData(); // إعادة تحميل البيانات
+        }
+      }
+    } catch (error) {
+      console.error('❌ خطأ في تغيير حالة المميز:', error);
+    }
   };
 
   const updateEditingCourse = (field: string, value: any) => {
@@ -126,25 +193,28 @@ const CoursesSettings: React.FC<CoursesSettingsProps> = ({ data, onUpdate }) => 
 
   const updateFeatures = (index: number, value: string, isEnglish = false) => {
     if (!editingCourse) return;
-    const field = isEnglish ? 'featuresEn' : 'features';
-    const newFeatures = [...editingCourse[field]];
+    const field = isEnglish ? 'features_en' : 'features';
+    const currentFeatures = editingCourse[field] || [];
+    const newFeatures = [...currentFeatures];
     newFeatures[index] = value;
     setEditingCourse({ ...editingCourse, [field]: newFeatures });
   };
 
   const addFeature = (isEnglish = false) => {
     if (!editingCourse) return;
-    const field = isEnglish ? 'featuresEn' : 'features';
-    setEditingCourse({ 
-      ...editingCourse, 
-      [field]: [...editingCourse[field], ''] 
+    const field = isEnglish ? 'features_en' : 'features';
+    const currentFeatures = editingCourse[field] || [];
+    setEditingCourse({
+      ...editingCourse,
+      [field]: [...currentFeatures, '']
     });
   };
 
   const removeFeature = (index: number, isEnglish = false) => {
     if (!editingCourse) return;
-    const field = isEnglish ? 'featuresEn' : 'features';
-    const newFeatures = editingCourse[field].filter((_, i) => i !== index);
+    const field = isEnglish ? 'features_en' : 'features';
+    const currentFeatures = editingCourse[field] || [];
+    const newFeatures = currentFeatures.filter((_, i) => i !== index);
     setEditingCourse({ ...editingCourse, [field]: newFeatures });
   };
 
@@ -176,16 +246,33 @@ const CoursesSettings: React.FC<CoursesSettingsProps> = ({ data, onUpdate }) => 
       {/* رأس القسم */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xl font-bold text-gray-800 font-arabic">إدارة الدورات التدريبية</h3>
-          <p className="text-gray-600 font-arabic">إضافة وتعديل وإدارة الدورات المعروضة</p>
+          <h3 className="text-xl font-bold text-gray-800 font-arabic flex items-center gap-2">
+            <BookOpen className="w-6 h-6 text-blue-600" />
+            إدارة الدورات التدريبية
+            {loading && <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />}
+          </h3>
+          <p className="text-gray-600 font-arabic">
+            إضافة وتعديل وإدارة الدورات المعروضة | متصل بقاعدة البيانات
+          </p>
         </div>
-        <button
-          onClick={handleAddNew}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          <span className="font-arabic">إضافة دورة جديدة</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={loadData}
+            disabled={loading}
+            className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+            title="إعادة تحميل البيانات"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+          <button
+            onClick={handleAddNew}
+            disabled={loading}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="font-arabic">إضافة دورة جديدة</span>
+          </button>
+        </div>
       </div>
 
       {/* شريط البحث */}
@@ -253,8 +340,8 @@ const CoursesSettings: React.FC<CoursesSettingsProps> = ({ data, onUpdate }) => 
                       مميز
                     </span>
                   )}
-                  <span className={`px-2 py-1 text-xs rounded-full ${getLevelColor(course.level)}`}>
-                    {course.level}
+                  <span className={`px-2 py-1 text-xs rounded-full ${getLevelColor(course.level_name)}`}>
+                    {course.level_name}
                   </span>
                   <span className={`px-2 py-1 text-xs rounded-full ${getCategoryColor(course.category)}`}>
                     {course.category}
@@ -270,7 +357,7 @@ const CoursesSettings: React.FC<CoursesSettingsProps> = ({ data, onUpdate }) => 
                   </div>
                   <div className="flex items-center gap-1">
                     <DollarSign className="w-4 h-4" />
-                    <span>{course.price} {course.currency}</span>
+                    <span>{course.price || 0} {course.currency || 'ريال'}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <User className="w-4 h-4" />
@@ -387,8 +474,8 @@ const CoursesSettings: React.FC<CoursesSettingsProps> = ({ data, onUpdate }) => 
                     </label>
                     <input
                       type="text"
-                      value={editingCourse.titleEn}
-                      onChange={(e) => updateEditingCourse('titleEn', e.target.value)}
+                      value={editingCourse.title_en || ''}
+                      onChange={(e) => updateEditingCourse('title_en', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Enter course title in English"
                     />
@@ -415,8 +502,8 @@ const CoursesSettings: React.FC<CoursesSettingsProps> = ({ data, onUpdate }) => 
                       وصف الدورة (إنجليزي)
                     </label>
                     <textarea
-                      value={editingCourse.descriptionEn}
-                      onChange={(e) => updateEditingCourse('descriptionEn', e.target.value)}
+                      value={editingCourse.description_en || ''}
+                      onChange={(e) => updateEditingCourse('description_en', e.target.value)}
                       rows={4}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Enter course description in English"
@@ -444,8 +531,8 @@ const CoursesSettings: React.FC<CoursesSettingsProps> = ({ data, onUpdate }) => 
                       المستوى
                     </label>
                     <select
-                      value={editingCourse.level}
-                      onChange={(e) => updateEditingCourse('level', e.target.value)}
+                      value={editingCourse.level_name}
+                      onChange={(e) => updateEditingCourse('level_name', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="مبتدئ">مبتدئ</option>
@@ -504,8 +591,8 @@ const CoursesSettings: React.FC<CoursesSettingsProps> = ({ data, onUpdate }) => 
                     </label>
                     <input
                       type="text"
-                      value={editingCourse.enrollmentUrl}
-                      onChange={(e) => updateEditingCourse('enrollmentUrl', e.target.value)}
+                      value={editingCourse.enrollment_url || ''}
+                      onChange={(e) => updateEditingCourse('enrollment_url', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="#enroll-course"
                     />
@@ -518,7 +605,7 @@ const CoursesSettings: React.FC<CoursesSettingsProps> = ({ data, onUpdate }) => 
                     مميزات الدورة
                   </label>
                   <div className="space-y-2">
-                    {editingCourse.features.map((feature, index) => (
+                    {(editingCourse.features || []).map((feature, index) => (
                       <div key={index} className="flex items-center gap-2">
                         <input
                           type="text"
@@ -570,8 +657,8 @@ const CoursesSettings: React.FC<CoursesSettingsProps> = ({ data, onUpdate }) => 
                   <label className="flex items-center gap-2 font-arabic">
                     <input
                       type="checkbox"
-                      checked={editingCourse.showPrice}
-                      onChange={(e) => updateEditingCourse('showPrice', e.target.checked)}
+                      checked={editingCourse.show_price || false}
+                      onChange={(e) => updateEditingCourse('show_price', e.target.checked)}
                       className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                     />
                     <span>إظهار السعر</span>

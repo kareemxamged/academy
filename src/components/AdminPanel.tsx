@@ -390,7 +390,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, siteData, onDa
                 <SectionsSettings data={localData.sections} onUpdate={(sections) => updateData('sections', sections)} />
               )}
               {activeTab === 'courses' && (
-                <CoursesSettings data={localData.courses || []} onUpdate={(courses) => updateData('courses', courses)} />
+                <CoursesSettings />
               )}
               {activeTab === 'gallery' && (
                 <GallerySettings />
