@@ -161,29 +161,35 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, siteData, onDa
 
   useEffect(() => {
     // الحصول على حالة الخدمة
-    const status = getDataServiceStatus();
-    setServiceStatus(status);
+    const fetchServiceStatus = async () => {
+      const status = await getDataServiceStatus();
+      setServiceStatus(status);
+    };
+    fetchServiceStatus();
   }, []);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setIsSaving(true);
     setSaveStatus('idle');
 
     try {
-      const success = saveSiteData(localData);
+      console.log('🔄 جاري حفظ البيانات في قاعدة البيانات...');
+      const success = await saveSiteData(localData);
       if (success) {
         onDataChange(localData);
         setHasChanges(false);
         setSaveStatus('success');
+        console.log('✅ تم حفظ البيانات بنجاح في قاعدة البيانات');
 
         // إخفاء رسالة النجاح بعد 3 ثوان
         setTimeout(() => setSaveStatus('idle'), 3000);
       } else {
         setSaveStatus('error');
+        console.error('❌ فشل في حفظ البيانات');
         setTimeout(() => setSaveStatus('idle'), 5000);
       }
     } catch (error) {
-      console.error('خطأ في الحفظ:', error);
+      console.error('❌ خطأ في الحفظ:', error);
       setSaveStatus('error');
       setTimeout(() => setSaveStatus('idle'), 5000);
     } finally {
@@ -191,18 +197,20 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, siteData, onDa
     }
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
     setIsSaving(true);
 
     try {
-      const defaultData = resetSiteData();
+      console.log('🔄 جاري إعادة تعيين البيانات...');
+      const defaultData = await resetSiteData();
       setLocalData(defaultData);
       onDataChange(defaultData);
       setHasChanges(false);
       setSaveStatus('success');
+      console.log('✅ تم إعادة تعيين البيانات بنجاح');
       setTimeout(() => setSaveStatus('idle'), 3000);
     } catch (error) {
-      console.error('خطأ في إعادة التعيين:', error);
+      console.error('❌ خطأ في إعادة التعيين:', error);
       setSaveStatus('error');
       setTimeout(() => setSaveStatus('idle'), 5000);
     } finally {
@@ -273,6 +281,22 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, siteData, onDa
               </div>
             </div>
             <div className="flex items-center gap-3">
+              {/* مؤشر حالة الاتصال بقاعدة البيانات */}
+              {serviceStatus && (
+                <div className={`flex items-center gap-2 px-3 py-1 rounded-lg border ${
+                  serviceStatus.databaseConnected
+                    ? 'bg-green-500/20 border-green-400/30'
+                    : 'bg-red-500/20 border-red-400/30'
+                }`}>
+                  <div className={`w-2 h-2 rounded-full ${
+                    serviceStatus.databaseConnected ? 'bg-green-400' : 'bg-red-400'
+                  }`}></div>
+                  <span className="text-sm font-arabic">
+                    {serviceStatus.databaseConnected ? 'متصل بقاعدة البيانات' : 'غير متصل'}
+                  </span>
+                </div>
+              )}
+
               {/* مؤشر حالة الحفظ */}
               {saveStatus === 'success' && (
                 <motion.div
@@ -281,7 +305,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, siteData, onDa
                   className="flex items-center gap-2 px-3 py-1 bg-green-500/20 rounded-lg border border-green-400/30"
                 >
                   <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  <span className="text-sm font-arabic">تم الحفظ بنجاح</span>
+                  <span className="text-sm font-arabic">تم الحفظ في قاعدة البيانات</span>
                 </motion.div>
               )}
 

@@ -151,13 +151,19 @@ function App() {
 
   // تحميل البيانات الثابتة عند بدء التطبيق
   useEffect(() => {
-    try {
-      const loadedData = loadSiteData();
-      setSiteData(loadedData);
-    } catch (error) {
-      console.error('خطأ في تحميل البيانات:', error);
-      setSiteData(defaultSiteData);
-    }
+    const loadData = async () => {
+      try {
+        console.log('🔄 جاري تحميل إعدادات الموقع...');
+        const loadedData = await loadSiteData();
+        setSiteData(loadedData);
+        console.log('✅ تم تحميل إعدادات الموقع بنجاح');
+      } catch (error) {
+        console.error('❌ خطأ في تحميل البيانات:', error);
+        setSiteData(defaultSiteData);
+      }
+    };
+
+    loadData();
   }, []);
 
   // تحميل البيانات الديناميكية من Supabase

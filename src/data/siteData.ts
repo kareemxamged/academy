@@ -690,56 +690,160 @@ export const updateSocialMediaLinks = (data: SiteData): SiteData => {
   };
 };
 
-// دالة لحفظ البيانات في localStorage
-export const saveSiteData = (data: SiteData): boolean => {
+// استيراد خدمة Supabase
+import { settingsService } from '../lib/supabase';
+
+// دالة لحفظ البيانات في قاعدة البيانات
+export const saveSiteData = async (data: SiteData): Promise<boolean> => {
   try {
     // تحديث الروابط قبل الحفظ
     const updatedData = updateSocialMediaLinks(data);
-    localStorage.setItem('siteData', JSON.stringify(updatedData));
-    return true;
+
+    // حفظ كل قسم في قاعدة البيانات
+    const savePromises = [
+      settingsService.update('general', updatedData.general),
+      settingsService.update('sections', updatedData.sections),
+      settingsService.update('socialMedia', updatedData.socialMedia),
+      settingsService.update('location', updatedData.location),
+      settingsService.update('pages', updatedData.pages),
+      settingsService.update('last_sync', new Date().toISOString())
+    ];
+
+    const results = await Promise.all(savePromises);
+    const allSuccessful = results.every(result => result === true);
+
+    if (allSuccessful) {
+      // حفظ نسخة احتياطية في localStorage أيضاً
+      localStorage.setItem('siteData', JSON.stringify(updatedData));
+      console.log('✅ تم حفظ البيانات في قاعدة البيانات بنجاح');
+      return true;
+    } else {
+      console.error('❌ فشل في حفظ بعض البيانات');
+      return false;
+    }
   } catch (error) {
     console.error('خطأ في حفظ البيانات:', error);
     return false;
   }
 };
 
-// دالة لتحميل البيانات من localStorage
-export const loadSiteData = (): SiteData => {
+// دالة لتحميل البيانات من قاعدة البيانات
+export const loadSiteData = async (): Promise<SiteData> => {
   try {
-    const saved = localStorage.getItem('siteData');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      // التأكد من وجود جميع الخصائص المطلوبة
-      const mergedData = {
-        ...defaultSiteData,
-        ...parsed,
-        general: { ...defaultSiteData.general, ...parsed.general },
-        courses: parsed.courses || defaultSiteData.courses,
-        gallery: parsed.gallery || defaultSiteData.gallery,
-        pages: { ...defaultSiteData.pages, ...parsed.pages }
-      };
+    console.log('🔄 جاري تحميل البيانات من قاعدة البيانات...');
 
-      // تحديث الروابط بناءً على رقم الواتساب الحالي
-      return updateSocialMediaLinks(mergedData);
-    }
+    // تحميل البيانات من قاعدة البيانات
+    const [general, sections, socialMedia, location, pages] = await Promise.all([
+      settingsService.get('general'),
+      settingsService.get('sections'),
+      settingsService.get('socialMedia'),
+      settingsService.get('location'),
+      settingsService.get('pages')
+    ]);
+
+    // دمج البيانات المحملة مع البيانات الافتراضية
+    const mergedData: SiteData = {
+      ...defaultSiteData,
+      general: general ? { ...defaultSiteData.general, ...general } : defaultSiteData.general,
+      sections: sections || defaultSiteData.sections,
+      socialMedia: socialMedia || defaultSiteData.socialMedia,
+      location: location ? { ...defaultSiteData.location, ...location } : defaultSiteData.location,
+      pages: pages ? { ...defaultSiteData.pages, ...pages } : defaultSiteData.pages,
+      courses: defaultSiteData.courses, // الدورات تُدار من جدول منفصل
+      gallery: defaultSiteData.gallery, // المعرض يُدار من جدول منفصل
+      instructors: defaultSiteData.instructors, // المدربون يُدارون من جدول منفصل
+      techniques: defaultSiteData.techniques // التقنيات تُدار من جدول منفصل
+    };
+
+    // تحديث الروابط بناءً على رقم الواتساب الحالي
+    const updatedData = updateSocialMediaLinks(mergedData);
+
+    // حفظ نسخة احتياطية في localStorage
+    localStorage.setItem('siteData', JSON.stringify(updatedData));
+
+    console.log('✅ تم تحميل البيانات من قاعدة البيانات بنجاح');
+    return updatedData;
+
   } catch (error) {
-    console.error('خطأ في تحميل البيانات:', error);
+    console.error('❌ خطأ في تحميل البيانات من قاعدة البيانات:', error);
+    console.log('🔄 جاري التحميل من localStorage كبديل...');
+
+    // في حالة الفشل، استخدم localStorage كبديل
+    try {
+      const saved = localStorage.getItem('siteData');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const mergedData = {
+          ...defaultSiteData,
+          ...parsed,
+          general: { ...defaultSiteData.general, ...parsed.general },
+          courses: parsed.courses || defaultSiteData.courses,
+          gallery: parsed.gallery || defaultSiteData.gallery,
+          pages: { ...defaultSiteData.pages, ...parsed.pages }
+        };
+        return updateSocialMediaLinks(mergedData);
+      }
+    } catch (localError) {
+      console.error('خطأ في تحميل البيانات من localStorage:', localError);
+    }
+
+    // إذا فشل كل شيء، استخدم البيانات الافتراضية
+    return updateSocialMediaLinks(defaultSiteData);
   }
-  return updateSocialMediaLinks(defaultSiteData);
 };
 
 // دالة لإعادة تعيين البيانات للقيم الافتراضية
-export const resetSiteData = (): SiteData => {
-  localStorage.removeItem('siteData');
-  return defaultSiteData;
+export const resetSiteData = async (): Promise<SiteData> => {
+  try {
+    console.log('🔄 جاري إعادة تعيين البيانات...');
+
+    // إعادة تعيين البيانات في قاعدة البيانات
+    const resetPromises = [
+      settingsService.update('general', defaultSiteData.general),
+      settingsService.update('sections', defaultSiteData.sections),
+      settingsService.update('socialMedia', defaultSiteData.socialMedia),
+      settingsService.update('location', defaultSiteData.location),
+      settingsService.update('pages', defaultSiteData.pages),
+      settingsService.update('last_sync', new Date().toISOString())
+    ];
+
+    await Promise.all(resetPromises);
+
+    // إزالة البيانات من localStorage
+    localStorage.removeItem('siteData');
+
+    console.log('✅ تم إعادة تعيين البيانات بنجاح');
+    return updateSocialMediaLinks(defaultSiteData);
+
+  } catch (error) {
+    console.error('❌ خطأ في إعادة تعيين البيانات:', error);
+    // في حالة الفشل، أعد تعيين localStorage فقط
+    localStorage.removeItem('siteData');
+    return updateSocialMediaLinks(defaultSiteData);
+  }
 };
 
 // دالة للحصول على حالة الخدمة
-export const getDataServiceStatus = () => {
-  return {
-    firebaseEnabled: false,
-    firebaseConfigured: false,
-    lastSync: null,
-    hasLocalData: !!localStorage.getItem('siteData')
-  };
+export const getDataServiceStatus = async () => {
+  try {
+    // التحقق من آخر مزامنة
+    const lastSync = await settingsService.get('last_sync');
+
+    return {
+      supabaseEnabled: true,
+      supabaseConfigured: true,
+      lastSync: lastSync,
+      hasLocalData: !!localStorage.getItem('siteData'),
+      databaseConnected: true
+    };
+  } catch (error) {
+    console.error('خطأ في التحقق من حالة الخدمة:', error);
+    return {
+      supabaseEnabled: false,
+      supabaseConfigured: false,
+      lastSync: null,
+      hasLocalData: !!localStorage.getItem('siteData'),
+      databaseConnected: false
+    };
+  }
 };
