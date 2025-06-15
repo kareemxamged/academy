@@ -751,8 +751,8 @@ export const loadSiteData = async (): Promise<SiteData> => {
       pages: pages ? { ...defaultSiteData.pages, ...pages } : defaultSiteData.pages,
       courses: defaultSiteData.courses, // الدورات تُدار من جدول منفصل
       gallery: defaultSiteData.gallery, // المعرض يُدار من جدول منفصل
-      instructors: defaultSiteData.instructors, // المدربون يُدارون من جدول منفصل
-      techniques: defaultSiteData.techniques // التقنيات تُدار من جدول منفصل
+      instructors: defaultSiteData.instructors // المدربون يُدارون من جدول منفصل
+      // ملاحظة: التقنيات تُدار من جدول منفصل في قاعدة البيانات
     };
 
     // تحديث الروابط بناءً على رقم الواتساب الحالي
