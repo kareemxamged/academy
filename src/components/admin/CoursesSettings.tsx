@@ -16,33 +16,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { coursesService } from '../../lib/supabase';
-
-interface Course {
-  id: number;
-  title: string;
-  title_en?: string;
-  description: string;
-  description_en?: string;
-  duration: string;
-  duration_en?: string;
-  level_name: string;
-  level_name_en?: string;
-  price?: number;
-  currency?: string;
-  show_price?: boolean;
-  image_url?: string;
-  features?: string[];
-  features_en?: string[];
-  instructor: string;
-  instructor_en?: string;
-  category: string;
-  category_en?: string;
-  enrollment_url?: string;
-  visible?: boolean;
-  featured?: boolean;
-  created_at?: string;
-  updated_at?: string;
-}
+import type { Course } from '../../types/database';
 
 interface CoursesSettingsProps {
   // لا نحتاج props بعد الآن - سنحمل البيانات من قاعدة البيانات مباشرة
@@ -116,7 +90,17 @@ const CoursesSettings: React.FC<CoursesSettingsProps> = () => {
       if (isAddingNew) {
         console.log('🔄 جاري إضافة دورة جديدة...');
         const { id, created_at, updated_at, ...courseData } = editingCourse;
-        const newCourse = await coursesService.create(courseData);
+
+        // التأكد من أن الحقول المطلوبة موجودة
+        const courseToCreate = {
+          ...courseData,
+          description: courseData.description || '',
+          visible: courseData.visible ?? true,
+          featured: courseData.featured ?? false,
+          show_price: courseData.show_price ?? true
+        };
+
+        const newCourse = await coursesService.create(courseToCreate);
         if (newCourse) {
           console.log('✅ تم إضافة الدورة بنجاح');
           await loadData(); // إعادة تحميل البيانات
@@ -220,7 +204,7 @@ const CoursesSettings: React.FC<CoursesSettingsProps> = () => {
 
   const filteredCourses = data.filter(course =>
     course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    course.titleEn.toLowerCase().includes(searchTerm.toLowerCase())
+    (course.title_en && course.title_en.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const getLevelColor = (level: string) => {
@@ -315,7 +299,7 @@ const CoursesSettings: React.FC<CoursesSettingsProps> = () => {
             <span className="font-arabic text-purple-800">متوسط السعر</span>
           </div>
           <p className="text-2xl font-bold text-purple-600">
-            {data.length > 0 ? Math.round(data.reduce((sum, c) => sum + c.price, 0) / data.length) : 0}
+            {data.length > 0 ? Math.round(data.reduce((sum, c) => sum + (c.price || 0), 0) / data.length) : 0}
           </p>
         </div>
       </div>
