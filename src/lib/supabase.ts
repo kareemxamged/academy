@@ -569,19 +569,49 @@ export const settingsService = {
 
   // تحديث إعداد
   async update(key: string, value: any): Promise<boolean> {
-    const { error } = await supabase
-      .from('settings')
-      .upsert({
-        setting_key: key,
-        setting_value: value,
-        updated_at: new Date().toISOString()
-      });
-    
-    if (error) {
-      console.error(`خطأ في تحديث الإعداد ${key}:`, error);
+    try {
+      // أولاً، تحقق من وجود الإعداد
+      const { data: existing } = await supabase
+        .from('settings')
+        .select('id')
+        .eq('setting_key', key)
+        .single();
+
+      if (existing) {
+        // إذا كان موجود، قم بالتحديث
+        const { error } = await supabase
+          .from('settings')
+          .update({
+            setting_value: value,
+            updated_at: new Date().toISOString()
+          })
+          .eq('setting_key', key);
+
+        if (error) {
+          console.error(`خطأ في تحديث الإعداد ${key}:`, error);
+          return false;
+        }
+      } else {
+        // إذا لم يكن موجود، قم بالإدراج
+        const { error } = await supabase
+          .from('settings')
+          .insert({
+            setting_key: key,
+            setting_value: value,
+            updated_at: new Date().toISOString()
+          });
+
+        if (error) {
+          console.error(`خطأ في إدراج الإعداد ${key}:`, error);
+          return false;
+        }
+      }
+
+      console.log(`✅ تم تحديث الإعداد ${key} بنجاح`);
+      return true;
+    } catch (error) {
+      console.error(`خطأ عام في تحديث الإعداد ${key}:`, error);
       return false;
     }
-    
-    return true;
   }
 };
