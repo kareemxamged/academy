@@ -495,8 +495,43 @@ const CoursesSettings: React.FC<CoursesSettingsProps> = () => {
                   </div>
                 </div>
 
+                {/* صورة الدورة */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 font-arabic mb-2">
+                    صورة الدورة
+                  </label>
+                  <div className="space-y-3">
+                    {editingCourse.image_url && (
+                      <div className="relative inline-block">
+                        <img
+                          src={editingCourse.image_url}
+                          alt="صورة الدورة"
+                          className="w-32 h-32 object-cover rounded-lg border border-gray-300"
+                        />
+                        <button
+                          onClick={() => updateEditingCourse('image_url', '')}
+                          className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                          title="حذف الصورة"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                    <input
+                      type="text"
+                      value={editingCourse.image_url || ''}
+                      onChange={(e) => updateEditingCourse('image_url', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="رابط صورة الدورة (اختياري)"
+                    />
+                    <p className="text-xs text-gray-500">
+                      يمكنك إدخال رابط صورة من الإنترنت أو ترك الحقل فارغاً
+                    </p>
+                  </div>
+                </div>
+
                 {/* تفاصيل الدورة */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 font-arabic mb-2">
                       المدة
@@ -512,11 +547,32 @@ const CoursesSettings: React.FC<CoursesSettingsProps> = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 font-arabic mb-2">
+                      المدة (إنجليزي)
+                    </label>
+                    <input
+                      type="text"
+                      value={editingCourse.duration_en || ''}
+                      onChange={(e) => updateEditingCourse('duration_en', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Example: 4 Weeks"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 font-arabic mb-2">
                       المستوى
                     </label>
                     <select
                       value={editingCourse.level_name}
-                      onChange={(e) => updateEditingCourse('level_name', e.target.value)}
+                      onChange={(e) => {
+                        updateEditingCourse('level_name', e.target.value);
+                        // تحديث النسخة الإنجليزية تلقائياً
+                        const englishLevel = e.target.value === 'مبتدئ' ? 'Beginner' :
+                                           e.target.value === 'متوسط' ? 'Intermediate' : 'Advanced';
+                        updateEditingCourse('level_name_en', englishLevel);
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="مبتدئ">مبتدئ</option>
@@ -531,7 +587,13 @@ const CoursesSettings: React.FC<CoursesSettingsProps> = () => {
                     </label>
                     <select
                       value={editingCourse.category}
-                      onChange={(e) => updateEditingCourse('category', e.target.value)}
+                      onChange={(e) => {
+                        updateEditingCourse('category', e.target.value);
+                        // تحديث النسخة الإنجليزية تلقائياً
+                        const englishCategory = e.target.value === 'رسم تقليدي' ? 'Traditional Drawing' :
+                                              e.target.value === 'رسم رقمي' ? 'Digital Art' : 'Portrait';
+                        updateEditingCourse('category_en', englishCategory);
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="رسم تقليدي">رسم تقليدي</option>
@@ -539,10 +601,23 @@ const CoursesSettings: React.FC<CoursesSettingsProps> = () => {
                       <option value="بورتريه">بورتريه</option>
                     </select>
                   </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 font-arabic mb-2">
+                      المدرب (إنجليزي)
+                    </label>
+                    <input
+                      type="text"
+                      value={editingCourse.instructor_en || ''}
+                      onChange={(e) => updateEditingCourse('instructor_en', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Instructor name in English"
+                    />
+                  </div>
                 </div>
 
-                {/* السعر والمدرب */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* السعر والعملة والمدرب */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 font-arabic mb-2">
                       السعر
@@ -554,6 +629,23 @@ const CoursesSettings: React.FC<CoursesSettingsProps> = () => {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="0"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 font-arabic mb-2">
+                      العملة
+                    </label>
+                    <select
+                      value={editingCourse.currency}
+                      onChange={(e) => updateEditingCourse('currency', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="ريال سعودي">ريال سعودي</option>
+                      <option value="جنيه مصري">جنيه مصري</option>
+                      <option value="درهم إماراتي">درهم إماراتي</option>
+                      <option value="دولار أمريكي">دولار أمريكي</option>
+                      <option value="يورو">يورو</option>
+                    </select>
                   </div>
 
                   <div>
@@ -584,35 +676,69 @@ const CoursesSettings: React.FC<CoursesSettingsProps> = () => {
                 </div>
 
                 {/* المميزات */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 font-arabic mb-2">
-                    مميزات الدورة
-                  </label>
-                  <div className="space-y-2">
-                    {(editingCourse.features || []).map((feature, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          value={feature}
-                          onChange={(e) => updateFeatures(index, e.target.value)}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="أدخل ميزة الدورة"
-                        />
-                        <button
-                          onClick={() => removeFeature(index)}
-                          className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
-                    <button
-                      onClick={() => addFeature()}
-                      className="flex items-center gap-2 px-3 py-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span className="font-arabic">إضافة ميزة</span>
-                    </button>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 font-arabic mb-2">
+                      مميزات الدورة (عربي)
+                    </label>
+                    <div className="space-y-2">
+                      {(editingCourse.features || []).map((feature, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={feature}
+                            onChange={(e) => updateFeatures(index, e.target.value)}
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="أدخل ميزة الدورة"
+                          />
+                          <button
+                            onClick={() => removeFeature(index)}
+                            className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        onClick={() => addFeature()}
+                        className="flex items-center gap-2 px-3 py-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span className="font-arabic">إضافة ميزة</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 font-arabic mb-2">
+                      مميزات الدورة (إنجليزي)
+                    </label>
+                    <div className="space-y-2">
+                      {(editingCourse.features_en || []).map((feature, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={feature}
+                            onChange={(e) => updateFeatures(index, e.target.value, true)}
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="Enter course feature in English"
+                          />
+                          <button
+                            onClick={() => removeFeature(index, true)}
+                            className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        onClick={() => addFeature(true)}
+                        className="flex items-center gap-2 px-3 py-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>Add Feature</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
 

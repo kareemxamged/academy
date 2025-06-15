@@ -196,24 +196,25 @@ function App() {
     id: course.id,
     title: course.title,
     titleEn: course.title_en || course.title,
-    description: course.description,
-    descriptionEn: course.description_en || course.description,
+    description: course.description || '',
+    descriptionEn: course.description_en || course.description || '',
     image: course.image_url || '',
     duration: course.duration,
     durationEn: course.duration_en || course.duration,
-    level: course.level,
-    levelEn: course.level_en || course.level,
-    price: course.price,
-    originalPrice: course.original_price,
-    hidePrice: course.hide_price || false,
+    level: course.level_name, // تصحيح: استخدام level_name بدلاً من level
+    levelEn: course.level_name_en || course.level_name,
+    price: course.price || 0,
+    currency: course.currency || 'ريال سعودي',
+    showPrice: course.show_price !== false, // تصحيح: استخدام show_price
     instructor: course.instructor,
     instructorEn: course.instructor_en || course.instructor,
     features: course.features || [],
     featuresEn: course.features_en || course.features || [],
     category: course.category,
     categoryEn: course.category_en || course.category,
+    enrollmentUrl: course.enrollment_url || '#enroll-course', // إضافة رابط التسجيل
     featured: course.featured || false,
-    visible: course.visible
+    visible: course.visible !== false
   });
 
   // دالة تحويل بيانات المعرض من قاعدة البيانات إلى تنسيق العرض
