@@ -198,7 +198,7 @@ function App() {
     titleEn: course.title_en || course.title,
     description: course.description || '',
     descriptionEn: course.description_en || course.description || '',
-    image: course.image_url || '',
+    image: '', // إزالة الاعتماد على صورة الدورة
     duration: course.duration,
     durationEn: course.duration_en || course.duration,
     level: course.level_name, // تصحيح: استخدام level_name بدلاً من level
@@ -212,7 +212,7 @@ function App() {
     featuresEn: course.features_en || course.features || [],
     category: course.category,
     categoryEn: course.category_en || course.category,
-    enrollmentUrl: course.enrollment_url || '#enroll-course', // إضافة رابط التسجيل
+    enrollmentUrl: '#enroll-course', // قيمة ثابتة لتفعيل الواتساب
     featured: course.featured || false,
     visible: course.visible !== false
   });

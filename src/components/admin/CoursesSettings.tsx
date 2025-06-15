@@ -68,7 +68,7 @@ const CoursesSettings: React.FC<CoursesSettingsProps> = () => {
     instructor_en: '',
     category: 'رسم تقليدي',
     category_en: 'Traditional Drawing',
-    enrollment_url: '',
+    enrollment_url: '#enroll-course', // قيمة افتراضية للتوافق مع قاعدة البيانات
     visible: true,
     featured: false
   });
@@ -97,7 +97,8 @@ const CoursesSettings: React.FC<CoursesSettingsProps> = () => {
           description: courseData.description || '',
           visible: courseData.visible ?? true,
           featured: courseData.featured ?? false,
-          show_price: courseData.show_price ?? true
+          show_price: courseData.show_price ?? true,
+          enrollment_url: '#enroll-course' // تعيين قيمة افتراضية لرابط التسجيل
         };
 
         const newCourse = await coursesService.create(courseToCreate);
@@ -495,41 +496,6 @@ const CoursesSettings: React.FC<CoursesSettingsProps> = () => {
                   </div>
                 </div>
 
-                {/* صورة الدورة */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 font-arabic mb-2">
-                    صورة الدورة
-                  </label>
-                  <div className="space-y-3">
-                    {editingCourse.image_url && (
-                      <div className="relative inline-block">
-                        <img
-                          src={editingCourse.image_url}
-                          alt="صورة الدورة"
-                          className="w-32 h-32 object-cover rounded-lg border border-gray-300"
-                        />
-                        <button
-                          onClick={() => updateEditingCourse('image_url', '')}
-                          className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-                          title="حذف الصورة"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    )}
-                    <input
-                      type="text"
-                      value={editingCourse.image_url || ''}
-                      onChange={(e) => updateEditingCourse('image_url', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="رابط صورة الدورة (اختياري)"
-                    />
-                    <p className="text-xs text-gray-500">
-                      يمكنك إدخال رابط صورة من الإنترنت أو ترك الحقل فارغاً
-                    </p>
-                  </div>
-                </div>
-
                 {/* تفاصيل الدورة */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -617,7 +583,7 @@ const CoursesSettings: React.FC<CoursesSettingsProps> = () => {
                 </div>
 
                 {/* السعر والعملة والمدرب */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 font-arabic mb-2">
                       السعر
@@ -658,19 +624,6 @@ const CoursesSettings: React.FC<CoursesSettingsProps> = () => {
                       onChange={(e) => updateEditingCourse('instructor', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="اسم المدرب"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 font-arabic mb-2">
-                      رابط التسجيل
-                    </label>
-                    <input
-                      type="text"
-                      value={editingCourse.enrollment_url || ''}
-                      onChange={(e) => updateEditingCourse('enrollment_url', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="#enroll-course"
                     />
                   </div>
                 </div>
