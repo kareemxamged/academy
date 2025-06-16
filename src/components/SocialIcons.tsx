@@ -5,7 +5,7 @@ import {
   Linkedin, Phone, Mail, Globe, Camera, Music,
   Send, Video, MapPin, Clock, MessageSquare, Image, AtSign
 } from 'lucide-react';
-import { getCustomIcon } from './CustomIcons';
+import { getCustomIcon } from './icons/SocialIcons';
 import { hoverAnimations, tapAnimations, cssTransitions } from '../lib/animations';
 
 /**

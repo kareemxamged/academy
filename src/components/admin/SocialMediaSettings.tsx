@@ -13,6 +13,7 @@ import {
   Globe
 } from 'lucide-react';
 import { settingsService } from '../../lib/supabase';
+import { getCustomIcon } from '../icons/SocialIcons';
 
 interface SocialMediaItem {
   id: string;
@@ -28,6 +29,16 @@ interface SocialMediaItem {
 interface SocialMediaSettingsProps {
   onDataChange?: () => void;
 }
+
+// دالة لعرض الأيقونة الصحيحة
+const getIconComponent = (iconName: string, className?: string) => {
+  // أولاً نتحقق من الأيقونات المخصصة
+  const customIcon = getCustomIcon(iconName, { className, size: 24 });
+  if (customIcon) return customIcon;
+
+  // إذا لم توجد أيقونة مخصصة، نستخدم Globe كافتراضي
+  return <Globe className={className || 'w-6 h-6'} />;
+};
 
 /**
  * مكون إدارة وسائل التواصل الاجتماعي المحسن
@@ -200,7 +211,7 @@ const SocialMediaSettings: React.FC<SocialMediaSettingsProps> = ({ onDataChange 
               {/* معلومات المنصة */}
               <div className="flex items-center gap-4">
                 <div className={`w-12 h-12 rounded-lg ${item.iconBg} flex items-center justify-center`}>
-                  <Globe className={`w-6 h-6 ${item.iconColor}`} />
+                  {getIconComponent(item.icon, `w-6 h-6 ${item.iconColor}`)}
                 </div>
                 
                 <div>
