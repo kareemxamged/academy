@@ -138,7 +138,8 @@ import CoursesSettings from './admin/CoursesSettings';
 import GallerySettings from './admin/GallerySettings';
 import InstructorsManagement from './admin/InstructorsSettings';
 import TechniquesSettings from './admin/TechniquesSettings';
-import { GeneralSettings, SocialSettings, LocationSettings, PagesSettings } from './admin/AdminSettings';
+import SocialMediaSettings from './admin/SocialMediaSettings';
+import { GeneralSettings, LocationSettings, PagesSettings } from './admin/AdminSettings';
 
 interface AdminPanelProps {
   isOpen: boolean;
@@ -402,7 +403,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, siteData, onDa
                 <GallerySettings onDataChange={handleDynamicDataChange} />
               )}
               {activeTab === 'social' && (
-                <SocialSettings data={localData.socialMedia} onUpdate={(social) => updateData('socialMedia', social)} />
+                <SocialMediaSettings onDataChange={handleDynamicDataChange} />
               )}
               {activeTab === 'instructors' && (
                 <InstructorsManagement onDataChange={handleDynamicDataChange} />
