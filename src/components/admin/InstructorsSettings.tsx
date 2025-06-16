@@ -51,6 +51,7 @@ const InstructorsSettings: React.FC<InstructorsSettingsProps> = () => {
     title: '',
     title_en: '',
     image_url: '',
+    profile_url: '',
     experience: '',
     experience_en: '',
     specialties: [],
@@ -75,17 +76,35 @@ const InstructorsSettings: React.FC<InstructorsSettingsProps> = () => {
   const handleSave = async () => {
     if (!editingItem) return;
 
+    // التحقق من صحة البيانات
+    if (!editingItem.name.trim()) {
+      alert('يرجى إدخال اسم المدرب');
+      return;
+    }
+    if (!editingItem.title.trim()) {
+      alert('يرجى إدخال المسمى الوظيفي');
+      return;
+    }
+
     try {
       if (isAddingNew) {
         const { id, created_at, updated_at, ...itemData } = editingItem;
         const newItem = await instructorsService.create(itemData);
         if (newItem) {
           await loadData();
+          alert('تم إضافة المدرب بنجاح');
+        } else {
+          alert('فشل في إضافة المدرب');
+          return;
         }
       } else {
         const updatedItem = await instructorsService.update(editingItem.id, editingItem);
         if (updatedItem) {
           await loadData();
+          alert('تم تحديث بيانات المدرب بنجاح');
+        } else {
+          alert('فشل في تحديث بيانات المدرب');
+          return;
         }
       }
 
@@ -93,20 +112,26 @@ const InstructorsSettings: React.FC<InstructorsSettingsProps> = () => {
       setIsAddingNew(false);
     } catch (error) {
       console.error('خطأ في حفظ المدرب:', error);
-      alert('حدث خطأ في حفظ المدرب');
+      alert('حدث خطأ في حفظ المدرب. يرجى المحاولة مرة أخرى.');
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm('هل أنت متأكد من حذف هذا المدرب؟')) {
+    const instructor = data.find(item => item.id === id);
+    if (!instructor) return;
+
+    if (confirm(`هل أنت متأكد من حذف المدرب "${instructor.name}"؟\nهذا الإجراء لا يمكن التراجع عنه.`)) {
       try {
         const success = await instructorsService.delete(id);
         if (success) {
           await loadData();
+          alert('تم حذف المدرب بنجاح');
+        } else {
+          alert('فشل في حذف المدرب');
         }
       } catch (error) {
         console.error('خطأ في حذف المدرب:', error);
-        alert('حدث خطأ في حذف المدرب');
+        alert('حدث خطأ في حذف المدرب. يرجى المحاولة مرة أخرى.');
       }
     }
   };
@@ -115,11 +140,18 @@ const InstructorsSettings: React.FC<InstructorsSettingsProps> = () => {
     try {
       const item = data.find(item => item.id === id);
       if (item) {
-        await instructorsService.update(id, { visible: !item.visible });
-        await loadData();
+        const success = await instructorsService.update(id, { visible: !item.visible });
+        if (success) {
+          await loadData();
+          const status = !item.visible ? 'مرئي' : 'مخفي';
+          console.log(`تم تغيير حالة المدرب "${item.name}" إلى ${status}`);
+        } else {
+          alert('فشل في تغيير حالة الرؤية');
+        }
       }
     } catch (error) {
       console.error('خطأ في تغيير حالة الرؤية:', error);
+      alert('حدث خطأ في تغيير حالة الرؤية');
     }
   };
 
@@ -281,6 +313,21 @@ const InstructorsSettings: React.FC<InstructorsSettingsProps> = () => {
         </AnimatePresence>
       </div>
 
+      {/* رسالة عدم وجود مدربين */}
+      {filteredData.length === 0 && !loading && (
+        <div className="text-center py-12">
+          <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-gray-600 mb-2 font-arabic">
+            لا يوجد مدربين
+          </h3>
+          <p className="text-gray-500 font-arabic">
+            {searchTerm
+              ? 'لا يوجد مدربين يطابقون معايير البحث'
+              : 'لم يتم إضافة أي مدربين بعد'}
+          </p>
+        </div>
+      )}
+
       {/* نموذج التعديل/الإضافة */}
       <AnimatePresence>
         {editingItem && (
@@ -330,6 +377,7 @@ const InstructorsSettings: React.FC<InstructorsSettingsProps> = () => {
                       onChange={(e) => updateEditingItem('name', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                       placeholder="اسم المدرب"
+                      required
                     />
                   </div>
                   
@@ -355,6 +403,7 @@ const InstructorsSettings: React.FC<InstructorsSettingsProps> = () => {
                       onChange={(e) => updateEditingItem('title', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                       placeholder="مدرب رسم محترف"
+                      required
                     />
                   </div>
                   
@@ -370,6 +419,18 @@ const InstructorsSettings: React.FC<InstructorsSettingsProps> = () => {
                   </div>
                 </div>
 
+                {/* رابط الملف الشخصي */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 font-arabic mb-1">رابط الملف الشخصي</label>
+                  <input
+                    type="url"
+                    value={editingItem.profile_url || ''}
+                    onChange={(e) => updateEditingItem('profile_url', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="https://example.com/profile"
+                  />
+                </div>
+
                 {/* الخبرة */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -382,7 +443,7 @@ const InstructorsSettings: React.FC<InstructorsSettingsProps> = () => {
                       placeholder="10 سنوات خبرة في تعليم الرسم"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 font-arabic mb-1">الخبرة (إنجليزي)</label>
                     <input
