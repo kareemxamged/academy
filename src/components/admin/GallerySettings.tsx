@@ -20,10 +20,10 @@ import type { GalleryItem } from '../../types/database';
 import { GalleryImageUpload } from '../ImageUpload';
 
 interface GallerySettingsProps {
-  // لا نحتاج data و onUpdate لأننا سنستخدم Supabase مباشرة
+  onDataChange?: () => void; // دالة لإشعار المكون الأب بتغيير البيانات
 }
 
-const GallerySettings: React.FC<GallerySettingsProps> = () => {
+const GallerySettings: React.FC<GallerySettingsProps> = ({ onDataChange }) => {
   const [data, setData] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingItem, setEditingItem] = useState<GalleryItem | null>(null);
@@ -97,11 +97,13 @@ const GallerySettings: React.FC<GallerySettingsProps> = () => {
         const newItem = await galleryService.create(itemData);
         if (newItem) {
           await loadData(); // إعادة تحميل البيانات
+          onDataChange?.(); // إشعار المكون الأب بتغيير البيانات
         }
       } else {
         const updatedItem = await galleryService.update(editingItem.id, editingItem);
         if (updatedItem) {
           await loadData(); // إعادة تحميل البيانات
+          onDataChange?.(); // إشعار المكون الأب بتغيير البيانات
         }
       }
 
@@ -119,6 +121,7 @@ const GallerySettings: React.FC<GallerySettingsProps> = () => {
         const success = await galleryService.delete(id);
         if (success) {
           await loadData(); // إعادة تحميل البيانات
+          onDataChange?.(); // إشعار المكون الأب بتغيير البيانات
         }
       } catch (error) {
         console.error('خطأ في حذف العمل:', error);
@@ -133,6 +136,7 @@ const GallerySettings: React.FC<GallerySettingsProps> = () => {
       if (item) {
         await galleryService.update(id, { visible: !item.visible });
         await loadData(); // إعادة تحميل البيانات
+        onDataChange?.(); // إشعار المكون الأب بتغيير البيانات
       }
     } catch (error) {
       console.error('خطأ في تغيير حالة الرؤية:', error);
@@ -145,6 +149,7 @@ const GallerySettings: React.FC<GallerySettingsProps> = () => {
       if (item) {
         await galleryService.update(id, { featured: !item.featured });
         await loadData(); // إعادة تحميل البيانات
+        onDataChange?.(); // إشعار المكون الأب بتغيير البيانات
       }
     } catch (error) {
       console.error('خطأ في تغيير حالة التمييز:', error);

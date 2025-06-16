@@ -393,13 +393,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, siteData, onDa
                 <CoursesSettings />
               )}
               {activeTab === 'gallery' && (
-                <GallerySettings />
+                <GallerySettings onDataChange={onDataChange} />
               )}
               {activeTab === 'social' && (
                 <SocialSettings data={localData.socialMedia} onUpdate={(social) => updateData('socialMedia', social)} />
               )}
               {activeTab === 'instructors' && (
-                <InstructorsManagement />
+                <InstructorsManagement onDataChange={onDataChange} />
               )}
               {activeTab === 'techniques' && (
                 <TechniquesSettings />

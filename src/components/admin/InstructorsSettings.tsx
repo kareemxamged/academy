@@ -18,9 +18,11 @@ import { instructorsService } from '../../lib/supabase';
 import type { Instructor } from '../../types/database';
 import { InstructorImageUpload } from '../ImageUpload';
 
-interface InstructorsSettingsProps {}
+interface InstructorsSettingsProps {
+  onDataChange?: () => void; // دالة لإشعار المكون الأب بتغيير البيانات
+}
 
-const InstructorsSettings: React.FC<InstructorsSettingsProps> = () => {
+const InstructorsSettings: React.FC<InstructorsSettingsProps> = ({ onDataChange }) => {
   const [data, setData] = useState<Instructor[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingItem, setEditingItem] = useState<Instructor | null>(null);
@@ -92,6 +94,7 @@ const InstructorsSettings: React.FC<InstructorsSettingsProps> = () => {
         const newItem = await instructorsService.create(itemData);
         if (newItem) {
           await loadData();
+          onDataChange?.(); // إشعار المكون الأب بتغيير البيانات
           alert('تم إضافة المدرب بنجاح');
         } else {
           alert('فشل في إضافة المدرب');
@@ -101,6 +104,7 @@ const InstructorsSettings: React.FC<InstructorsSettingsProps> = () => {
         const updatedItem = await instructorsService.update(editingItem.id, editingItem);
         if (updatedItem) {
           await loadData();
+          onDataChange?.(); // إشعار المكون الأب بتغيير البيانات
           alert('تم تحديث بيانات المدرب بنجاح');
         } else {
           alert('فشل في تحديث بيانات المدرب');
@@ -125,6 +129,7 @@ const InstructorsSettings: React.FC<InstructorsSettingsProps> = () => {
         const success = await instructorsService.delete(id);
         if (success) {
           await loadData();
+          onDataChange?.(); // إشعار المكون الأب بتغيير البيانات
           alert('تم حذف المدرب بنجاح');
         } else {
           alert('فشل في حذف المدرب');
@@ -143,6 +148,7 @@ const InstructorsSettings: React.FC<InstructorsSettingsProps> = () => {
         const success = await instructorsService.update(id, { visible: !item.visible });
         if (success) {
           await loadData();
+          onDataChange?.(); // إشعار المكون الأب بتغيير البيانات
           const status = !item.visible ? 'مرئي' : 'مخفي';
           console.log(`تم تغيير حالة المدرب "${item.name}" إلى ${status}`);
         } else {
