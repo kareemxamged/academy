@@ -468,6 +468,57 @@ export const techniquesService = {
     }
 
     return data || [];
+  },
+
+  // تحديث المشاهدات بقيم وهمية عالية لجميع التقنيات
+  async updateViewCountsWithFakeData(): Promise<boolean> {
+    try {
+      // جلب جميع التقنيات
+      const { data: techniques, error: fetchError } = await supabase
+        .from('drawing_techniques')
+        .select('id, title, view_count');
+
+      if (fetchError) {
+        console.error('خطأ في جلب التقنيات:', fetchError);
+        return false;
+      }
+
+      if (!techniques || techniques.length === 0) {
+        console.log('لا توجد تقنيات لتحديث المشاهدات');
+        return true;
+      }
+
+      // تحديث كل تقنية بعدد مشاهدات وهمي عالي
+      const updates = techniques.map(technique => {
+        // توليد رقم عشوائي بين 100 و 500
+        const fakeViewCount = Math.floor(Math.random() * 401) + 100;
+
+        return supabase
+          .from('drawing_techniques')
+          .update({
+            view_count: fakeViewCount,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', technique.id);
+      });
+
+      // تنفيذ جميع التحديثات
+      const results = await Promise.all(updates);
+
+      // التحقق من نجاح جميع التحديثات
+      const hasErrors = results.some(result => result.error);
+
+      if (hasErrors) {
+        console.error('حدثت أخطاء في تحديث بعض المشاهدات');
+        return false;
+      }
+
+      console.log(`✅ تم تحديث المشاهدات لـ ${techniques.length} تقنية بنجاح`);
+      return true;
+    } catch (error) {
+      console.error('خطأ في تحديث المشاهدات:', error);
+      return false;
+    }
   }
 };
 

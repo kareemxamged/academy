@@ -107,7 +107,7 @@ const DrawingTechniques: React.FC<DrawingTechniquesProps> = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50 py-12">
+    <div className="min-h-screen py-12">
       <div className="container mx-auto px-4">
         {/* العنوان الرئيسي */}
         <motion.div
@@ -129,7 +129,7 @@ const DrawingTechniques: React.FC<DrawingTechniquesProps> = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="bg-white rounded-2xl shadow-lg p-6 mb-8"
+          className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 mb-8 border border-white/60"
         >
           {/* شريط البحث */}
           <div className="relative mb-6">
@@ -202,7 +202,7 @@ const DrawingTechniques: React.FC<DrawingTechniquesProps> = () => {
                 <motion.div
                   whileHover={hoverAnimations.cardHover}
                   whileTap={{ scale: 0.98 }}
-                  className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer h-full"
+                  className="bg-white/90 backdrop-blur-sm rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer h-full border border-white/60"
                   onClick={() => openTechniqueDetail(technique)}
                 >
                   {/* شارة مميز */}
@@ -313,7 +313,7 @@ const DrawingTechniques: React.FC<DrawingTechniquesProps> = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="relative max-w-4xl max-h-[90vh] bg-white rounded-2xl overflow-hidden overflow-y-auto"
+              className="relative max-w-4xl max-h-[90vh] bg-white/95 backdrop-blur-md rounded-2xl overflow-hidden overflow-y-auto border border-white/60"
               onClick={(e) => e.stopPropagation()}
             >
               {/* زر الإغلاق */}

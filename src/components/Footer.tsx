@@ -14,10 +14,10 @@ const Footer: React.FC = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 1.6, duration: 0.6 }}
-      className="mt-12 pt-8 border-t border-gray-200 relative"
+      className="mt-12 pt-8 border-t border-white/30 relative"
     >
-      {/* تأثير خلفية ناعم - Soft background effect */}
-      <div className="absolute inset-0 bg-gradient-to-t from-gray-50/50 to-transparent pointer-events-none"></div>
+      {/* تأثير خلفية شفاف - Transparent background effect */}
+      <div className="absolute inset-0 bg-white/10 backdrop-blur-sm pointer-events-none"></div>
       <div className="text-center space-y-4 relative z-10">
         {/* حقوق النشر - Copyright */}
         <motion.div

@@ -53,6 +53,26 @@ const TechniquesSettings: React.FC<TechniquesSettingsProps> = () => {
     loadData();
   }, []);
 
+  // تحديث المشاهدات بقيم وهمية عالية
+  const updateFakeViewCounts = async () => {
+    if (!confirm('هل أنت متأكد من تحديث المشاهدات بقيم وهمية عالية لجميع التقنيات؟')) {
+      return;
+    }
+
+    try {
+      const success = await techniquesService.updateViewCountsWithFakeData();
+      if (success) {
+        alert('تم تحديث المشاهدات بنجاح!');
+        await loadData(); // إعادة تحميل البيانات لإظهار التحديثات
+      } else {
+        alert('فشل في تحديث المشاهدات');
+      }
+    } catch (error) {
+      console.error('خطأ في تحديث المشاهدات:', error);
+      alert('حدث خطأ في تحديث المشاهدات');
+    }
+  };
+
   const loadData = async () => {
     setLoading(true);
     try {
@@ -214,13 +234,23 @@ const TechniquesSettings: React.FC<TechniquesSettingsProps> = () => {
           </p>
         </div>
         
-        <button
-          onClick={() => setIsAddingNew(true)}
-          className="flex items-center gap-2 bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors font-arabic"
-        >
-          <Plus className="w-4 h-4" />
-          إضافة تقنية جديدة
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={updateFakeViewCounts}
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-arabic"
+          >
+            <Eye className="w-4 h-4" />
+            تحديث المشاهدات
+          </button>
+
+          <button
+            onClick={() => setIsAddingNew(true)}
+            className="flex items-center gap-2 bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors font-arabic"
+          >
+            <Plus className="w-4 h-4" />
+            إضافة تقنية جديدة
+          </button>
+        </div>
       </div>
 
       {/* شريط البحث والفلاتر */}
