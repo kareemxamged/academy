@@ -119,7 +119,42 @@ const SocialMediaSettings: React.FC<SocialMediaSettingsProps> = ({ onDataChange 
   const saveEdit = async () => {
     if (!editingItem) return;
 
+    // التحقق من صحة البيانات
+    if (!editingItem.name.trim()) {
+      alert('يرجى إدخال اسم المنصة بالعربية');
+      return;
+    }
+
+    if (!editingItem.nameEn.trim()) {
+      alert('يرجى إدخال اسم المنصة بالإنجليزية');
+      return;
+    }
+
+    if (!editingItem.url.trim()) {
+      alert('يرجى إدخال رابط المنصة');
+      return;
+    }
+
+    // التحقق من صحة الرابط
+    try {
+      new URL(editingItem.url);
+    } catch {
+      alert('يرجى إدخال رابط صحيح (يجب أن يبدأ بـ http:// أو https://)');
+      return;
+    }
+
     if (isAddingNew) {
+      // التحقق من عدم وجود منصة بنفس الاسم
+      const existingPlatform = socialMedia.find(item =>
+        item.name.toLowerCase() === editingItem.name.toLowerCase() ||
+        item.nameEn.toLowerCase() === editingItem.nameEn.toLowerCase()
+      );
+
+      if (existingPlatform) {
+        alert('يوجد منصة بنفس الاسم مسبقاً');
+        return;
+      }
+
       // إضافة عنصر جديد
       const newData = [...socialMedia, editingItem];
       const success = await saveData(newData);
@@ -152,20 +187,75 @@ const SocialMediaSettings: React.FC<SocialMediaSettingsProps> = ({ onDataChange 
     }
   };
 
+  // قائمة المنصات المتاحة
+  const availablePlatforms = [
+    { id: 'instagram', name: 'إنستغرام', nameEn: 'Instagram', icon: 'Instagram', iconBg: 'bg-gradient-to-br from-purple-400 to-pink-400' },
+    { id: 'facebook', name: 'فيسبوك', nameEn: 'Facebook', icon: 'Facebook', iconBg: 'bg-blue-600' },
+    { id: 'youtube', name: 'يوتيوب', nameEn: 'YouTube', icon: 'YouTube', iconBg: 'bg-red-600' },
+    { id: 'whatsapp', name: 'واتساب', nameEn: 'WhatsApp', icon: 'WhatsApp', iconBg: 'bg-green-500' },
+    { id: 'twitter', name: 'تويتر/X', nameEn: 'Twitter/X', icon: 'Twitter', iconBg: 'bg-black' },
+    { id: 'linkedin', name: 'لينكد إن', nameEn: 'LinkedIn', icon: 'LinkedIn', iconBg: 'bg-blue-700' },
+    { id: 'snapchat', name: 'سناب شات', nameEn: 'Snapchat', icon: 'Snapchat', iconBg: 'bg-yellow-400' },
+    { id: 'tiktok', name: 'تيك توك', nameEn: 'TikTok', icon: 'TikTok', iconBg: 'bg-black' },
+    { id: 'telegram', name: 'تيليجرام', nameEn: 'Telegram', icon: 'Telegram', iconBg: 'bg-blue-500' },
+    { id: 'discord', name: 'ديسكورد', nameEn: 'Discord', icon: 'Discord', iconBg: 'bg-indigo-600' },
+    { id: 'pinterest', name: 'بينتريست', nameEn: 'Pinterest', icon: 'Pinterest', iconBg: 'bg-red-500' },
+    { id: 'threads', name: 'ثريدز', nameEn: 'Threads', icon: 'Threads', iconBg: 'bg-black' },
+    { id: 'reddit', name: 'ريديت', nameEn: 'Reddit', icon: 'Reddit', iconBg: 'bg-orange-600' },
+    { id: 'twitch', name: 'تويتش', nameEn: 'Twitch', icon: 'Twitch', iconBg: 'bg-purple-600' },
+    { id: 'phone', name: 'اتصال مباشر', nameEn: 'Phone Call', icon: 'Phone', iconBg: 'bg-green-600' },
+    { id: 'email', name: 'البريد الإلكتروني', nameEn: 'Email', icon: 'Mail', iconBg: 'bg-gray-600' },
+    { id: 'website', name: 'الموقع الإلكتروني', nameEn: 'Website', icon: 'Globe', iconBg: 'bg-blue-800' },
+    { id: 'other', name: 'أخرى', nameEn: 'Other', icon: 'Globe', iconBg: 'bg-gray-500' }
+  ];
+
   // إضافة منصة جديدة
   const addNewPlatform = () => {
     const newItem: SocialMediaItem = {
       id: `platform_${Date.now()}`,
-      name: 'منصة جديدة',
-      nameEn: 'New Platform',
+      name: '',
+      nameEn: '',
       icon: 'Globe',
-      url: 'https://example.com',
+      url: '',
       iconColor: 'text-white',
       iconBg: 'bg-blue-600',
       visible: false
     };
     setEditingItem(newItem);
     setIsAddingNew(true);
+  };
+
+  // تحديث المنصة بناءً على الاختيار
+  const handlePlatformSelect = (platformId: string) => {
+    if (!editingItem) return;
+
+    const platform = availablePlatforms.find(p => p.id === platformId);
+    if (platform) {
+      if (platform.id === 'other') {
+        // إذا اختار "أخرى"، يترك الحقول فارغة للتخصيص
+        setEditingItem({
+          ...editingItem,
+          name: '',
+          nameEn: '',
+          icon: 'Globe',
+          iconBg: 'bg-gray-500'
+        });
+      } else {
+        // ملء البيانات تلقائياً للمنصات المعروفة
+        setEditingItem({
+          ...editingItem,
+          id: `${platform.id}_${Date.now()}`,
+          name: platform.name,
+          nameEn: platform.nameEn,
+          icon: platform.icon,
+          iconBg: platform.iconBg,
+          url: platform.id === 'whatsapp' ? 'https://wa.me/' :
+               platform.id === 'phone' ? 'tel:' :
+               platform.id === 'email' ? 'mailto:' :
+               `https://${platform.id}.com/`
+        });
+      }
+    }
   };
 
   if (isLoading) {
@@ -278,6 +368,26 @@ const SocialMediaSettings: React.FC<SocialMediaSettingsProps> = ({ onDataChange 
             </div>
 
             <div className="space-y-4">
+              {isAddingNew && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 font-arabic mb-1">
+                    اختر المنصة
+                  </label>
+                  <select
+                    onChange={(e) => handlePlatformSelect(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 font-arabic"
+                    defaultValue=""
+                  >
+                    <option value="" disabled>اختر المنصة...</option>
+                    {availablePlatforms.map(platform => (
+                      <option key={platform.id} value={platform.id}>
+                        {platform.name} - {platform.nameEn}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 font-arabic mb-1">
                   الاسم بالعربية
@@ -287,6 +397,7 @@ const SocialMediaSettings: React.FC<SocialMediaSettingsProps> = ({ onDataChange 
                   value={editingItem.name}
                   onChange={(e) => setEditingItem({ ...editingItem, name: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  placeholder="مثال: إنستغرام"
                 />
               </div>
 
@@ -299,6 +410,7 @@ const SocialMediaSettings: React.FC<SocialMediaSettingsProps> = ({ onDataChange 
                   value={editingItem.nameEn}
                   onChange={(e) => setEditingItem({ ...editingItem, nameEn: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  placeholder="Example: Instagram"
                 />
               </div>
 
@@ -311,7 +423,74 @@ const SocialMediaSettings: React.FC<SocialMediaSettingsProps> = ({ onDataChange 
                   value={editingItem.url}
                   onChange={(e) => setEditingItem({ ...editingItem, url: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  placeholder="https://instagram.com/username"
                 />
+              </div>
+
+              {/* اختيار الأيقونة للمنصات المخصصة */}
+              {editingItem.name && !availablePlatforms.find(p => p.name === editingItem.name && p.id !== 'other') && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 font-arabic mb-1">
+                    اختر الأيقونة
+                  </label>
+                  <select
+                    value={editingItem.icon}
+                    onChange={(e) => setEditingItem({ ...editingItem, icon: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 font-arabic"
+                  >
+                    <option value="Globe">🌐 موقع إلكتروني</option>
+                    <option value="Phone">📞 هاتف</option>
+                    <option value="Mail">📧 بريد إلكتروني</option>
+                    <option value="MessageCircle">💬 رسائل</option>
+                    <option value="Video">🎥 فيديو</option>
+                    <option value="Camera">📷 كاميرا</option>
+                    <option value="Music">🎵 موسيقى</option>
+                    <option value="Image">🖼️ صور</option>
+                    <option value="Send">📤 إرسال</option>
+                    <option value="AtSign">@ رمز</option>
+                  </select>
+                </div>
+              )}
+
+              {/* اختيار لون الخلفية */}
+              {editingItem.name && !availablePlatforms.find(p => p.name === editingItem.name && p.id !== 'other') && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 font-arabic mb-1">
+                    لون الخلفية
+                  </label>
+                  <select
+                    value={editingItem.iconBg}
+                    onChange={(e) => setEditingItem({ ...editingItem, iconBg: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 font-arabic"
+                  >
+                    <option value="bg-blue-600">🔵 أزرق</option>
+                    <option value="bg-red-600">🔴 أحمر</option>
+                    <option value="bg-green-600">🟢 أخضر</option>
+                    <option value="bg-purple-600">🟣 بنفسجي</option>
+                    <option value="bg-pink-600">🩷 وردي</option>
+                    <option value="bg-yellow-500">🟡 أصفر</option>
+                    <option value="bg-orange-600">🟠 برتقالي</option>
+                    <option value="bg-gray-600">⚫ رمادي</option>
+                    <option value="bg-black">⚫ أسود</option>
+                    <option value="bg-indigo-600">🔵 نيلي</option>
+                  </select>
+                </div>
+              )}
+
+              {/* معاينة الأيقونة */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 font-arabic mb-1">
+                  معاينة الأيقونة
+                </label>
+                <div className="flex items-center gap-3">
+                  <div className={`w-12 h-12 rounded-lg ${editingItem.iconBg} flex items-center justify-center`}>
+                    {getIconComponent(editingItem.icon, `w-6 h-6 ${editingItem.iconColor}`)}
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    <p className="font-arabic">{editingItem.name || 'اسم المنصة'}</p>
+                    <p>{editingItem.nameEn || 'Platform Name'}</p>
+                  </div>
+                </div>
               </div>
 
               <div className="flex gap-4">
