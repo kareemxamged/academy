@@ -337,8 +337,8 @@ function App() {
       const updatedData = await loadSiteData();
       if (updatedData) {
         console.log('✅ تم تحديث إعدادات الموقع بنجاح');
-        // تحديث البيانات المحلية
-        Object.assign(siteData, updatedData);
+        // تحديث البيانات المحلية باستخدام setSiteData لضمان إعادة الرسم
+        setSiteData(updatedData);
       }
     } catch (error) {
       console.error('❌ خطأ في إعادة تحميل إعدادات الموقع:', error);
@@ -378,12 +378,15 @@ function App() {
     setCurrentPage(page as 'home' | 'courses' | 'gallery' | 'instructors' | 'techniques' | 'contact');
   };
 
-  const handleDataChange = (newData: SiteData) => {
+  const handleDataChange = async (newData: SiteData) => {
+    // تحديث البيانات المحلية أولاً
     setSiteData(newData);
+
     // إعادة تحميل البيانات الديناميكية عند تغيير البيانات في لوحة التحكم
-    loadDynamicData();
-    // إعادة تحميل إعدادات الموقع (وسائل التواصل، الإعدادات العامة، إلخ)
-    reloadSiteSettings();
+    await loadDynamicData();
+
+    // إعادة تحميل إعدادات الموقع من قاعدة البيانات للتأكد من التزامن
+    await reloadSiteSettings();
   };
 
   // فحص إذا كانت البيانات محملة
@@ -712,7 +715,7 @@ function App() {
           )}
 
           {/* الفوتر - Footer */}
-          {safeSiteData.pages.showFooter && <Footer />}
+          {safeSiteData.pages.showFooter && <Footer siteName={safeSiteData.general.siteName} />}
         </div>
 
         {/* زر لوحة التحكم - Admin Button */}
@@ -727,10 +730,11 @@ function App() {
         {/* لوحة التحكم - Admin Panel */}
         <AdminPanel
           isOpen={isAdminOpen}
-          onClose={() => {
+          onClose={async () => {
             setIsAdminOpen(false);
             // إعادة تحميل البيانات عند إغلاق لوحة التحكم
-            loadDynamicData();
+            await loadDynamicData();
+            await reloadSiteSettings();
           }}
           siteData={safeSiteData}
           onDataChange={handleDataChange}

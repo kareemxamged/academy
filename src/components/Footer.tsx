@@ -3,10 +3,18 @@ import { motion } from 'framer-motion';
 import { Heart } from 'lucide-react';
 
 /**
+ * خصائص مكون الفوتر
+ * Footer Component Props
+ */
+interface FooterProps {
+  siteName?: string;
+}
+
+/**
  * مكون الفوتر البسيط
  * Simple Footer Component
  */
-const Footer: React.FC = () => {
+const Footer: React.FC<FooterProps> = ({ siteName = 'أكاديمية ميمو للرسم' }) => {
   const currentYear = new Date().getFullYear();
 
   return (
@@ -27,7 +35,7 @@ const Footer: React.FC = () => {
           className="space-y-2"
         >
           <p className="text-gray-500 text-sm font-arabic">
-            © {currentYear} أكاديمية ميمو للرسم. جميع الحقوق محفوظة
+            © {currentYear} {siteName}. جميع الحقوق محفوظة
           </p>
           <p className="text-gray-400 text-xs flex items-center justify-center space-x-2 space-x-reverse">
             <span className="font-arabic">صُنع بـ</span>

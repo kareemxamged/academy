@@ -183,6 +183,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, siteData, onDa
       console.log('🔄 جاري حفظ البيانات في قاعدة البيانات...');
       const success = await saveSiteData(localData);
       if (success) {
+        // إشعار المكون الأب بالتغيير فوراً
         onDataChange(localData);
         setHasChanges(false);
         setSaveStatus('success');
@@ -229,14 +230,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, siteData, onDa
     const newData = { ...localData };
     const keys = path.split('.');
     let current: any = newData;
-    
+
     for (let i = 0; i < keys.length - 1; i++) {
       current = current[keys[i]];
     }
-    
+
     current[keys[keys.length - 1]] = value;
     setLocalData(newData);
     setHasChanges(true);
+
+    // تحديث فوري للبيانات في المكون الأب لضمان التزامن
+    onDataChange(newData);
   };
 
   const tabs = [
