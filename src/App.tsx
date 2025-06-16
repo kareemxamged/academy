@@ -171,6 +171,41 @@ function App() {
     loadDynamicData();
   }, []);
 
+  // إعداد الاشتراك في التحديثات المباشرة للمدربين
+  useEffect(() => {
+    const subscription = instructorsService.subscribeToChanges((payload) => {
+      console.log('🔄 تحديث مباشر في المدربين:', payload);
+      // إعادة تحميل بيانات المدربين عند حدوث تغيير
+      loadInstructorsData();
+    });
+
+    // تنظيف الاشتراك عند إلغاء تحميل المكون
+    return () => {
+      instructorsService.unsubscribeFromChanges(subscription);
+    };
+  }, []);
+
+  // تحديث دوري إضافي كل 30 ثانية للتأكد من التزامن
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log('🔄 تحديث دوري لبيانات المدربين...');
+      loadInstructorsData();
+    }, 30000); // كل 30 ثانية
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // إعادة تحميل البيانات عند التركيز على النافذة
+  useEffect(() => {
+    const handleFocus = () => {
+      console.log('🔄 إعادة تحميل البيانات عند التركيز على النافذة...');
+      loadInstructorsData();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
+
   // دالة تحويل بيانات المدربين من قاعدة البيانات إلى تنسيق العرض
   const transformInstructorData = (instructor: any) => ({
     id: instructor.id,
@@ -270,6 +305,19 @@ function App() {
     created_at: technique.created_at,
     updated_at: technique.updated_at
   });
+
+  // دالة منفصلة لتحميل بيانات المدربين فقط
+  const loadInstructorsData = async () => {
+    try {
+      console.log('🔄 إعادة تحميل بيانات المدربين...');
+      const instructorsData = await instructorsService.getVisible();
+      const transformedInstructors = instructorsData.map(transformInstructorData);
+      setDynamicInstructors(transformedInstructors);
+      console.log('✅ تم تحديث بيانات المدربين بنجاح');
+    } catch (error) {
+      console.error('❌ خطأ في تحميل بيانات المدربين:', error);
+    }
+  };
 
   const loadDynamicData = async () => {
     setIsLoadingDynamic(true);

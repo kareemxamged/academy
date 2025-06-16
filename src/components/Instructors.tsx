@@ -1,6 +1,6 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { ExternalLink, Star, Award, Users, Clock } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ExternalLink, Star, Award, Users, Clock, RefreshCw, CheckCircle } from 'lucide-react';
 import { hoverAnimations, tapAnimations, cssTransitions } from '../lib/animations';
 import { InstructorWhatsAppButton } from './WhatsAppButton';
 
@@ -35,6 +35,22 @@ interface InstructorsProps {
  * Instructors Page Component
  */
 const Instructors: React.FC<InstructorsProps> = ({ instructors, whatsappNumber }) => {
+  const [showUpdateNotification, setShowUpdateNotification] = useState(false);
+  const [previousInstructorsCount, setPreviousInstructorsCount] = useState(instructors.length);
+
+  // مراقبة تغييرات في عدد المدربين لإظهار إشعار التحديث
+  useEffect(() => {
+    if (instructors.length !== previousInstructorsCount && previousInstructorsCount > 0) {
+      setShowUpdateNotification(true);
+      const timer = setTimeout(() => {
+        setShowUpdateNotification(false);
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+    setPreviousInstructorsCount(instructors.length);
+  }, [instructors.length, previousInstructorsCount]);
+
   const handleVisitProfile = (url: string) => {
     window.open(url, '_blank', 'noopener,noreferrer');
   };
@@ -47,6 +63,20 @@ const Instructors: React.FC<InstructorsProps> = ({ instructors, whatsappNumber }
       className="mb-8"
       id="instructors"
     >
+      {/* إشعار التحديث - Update Notification */}
+      <AnimatePresence>
+        {showUpdateNotification && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -50, scale: 0.8 }}
+            className="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2"
+          >
+            <CheckCircle className="w-5 h-5" />
+            <span className="font-arabic">تم تحديث قائمة المدربين</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* عنوان القسم - Section Title */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}

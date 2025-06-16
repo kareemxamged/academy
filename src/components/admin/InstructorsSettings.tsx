@@ -91,8 +91,10 @@ const InstructorsSettings: React.FC<InstructorsSettingsProps> = ({ onDataChange 
     try {
       if (isAddingNew) {
         const { id, created_at, updated_at, ...itemData } = editingItem;
+        console.log('🔄 إضافة مدرب جديد:', itemData);
         const newItem = await instructorsService.create(itemData);
         if (newItem) {
+          console.log('✅ تم إضافة المدرب بنجاح:', newItem);
           await loadData();
           onDataChange?.(); // إشعار المكون الأب بتغيير البيانات
           alert('تم إضافة المدرب بنجاح');
@@ -101,8 +103,10 @@ const InstructorsSettings: React.FC<InstructorsSettingsProps> = ({ onDataChange 
           return;
         }
       } else {
+        console.log('🔄 تحديث بيانات المدرب:', editingItem);
         const updatedItem = await instructorsService.update(editingItem.id, editingItem);
         if (updatedItem) {
+          console.log('✅ تم تحديث المدرب بنجاح:', updatedItem);
           await loadData();
           onDataChange?.(); // إشعار المكون الأب بتغيير البيانات
           alert('تم تحديث بيانات المدرب بنجاح');
@@ -115,7 +119,7 @@ const InstructorsSettings: React.FC<InstructorsSettingsProps> = ({ onDataChange 
       setEditingItem(null);
       setIsAddingNew(false);
     } catch (error) {
-      console.error('خطأ في حفظ المدرب:', error);
+      console.error('❌ خطأ في حفظ المدرب:', error);
       alert('حدث خطأ في حفظ المدرب. يرجى المحاولة مرة أخرى.');
     }
   };
@@ -145,18 +149,22 @@ const InstructorsSettings: React.FC<InstructorsSettingsProps> = ({ onDataChange 
     try {
       const item = data.find(item => item.id === id);
       if (item) {
-        const success = await instructorsService.update(id, { visible: !item.visible });
+        const newVisibility = !item.visible;
+        console.log(`🔄 تغيير حالة رؤية المدرب "${item.name}" إلى ${newVisibility ? 'مرئي' : 'مخفي'}`);
+
+        const success = await instructorsService.update(id, { visible: newVisibility });
         if (success) {
+          console.log(`✅ تم تغيير حالة المدرب "${item.name}" بنجاح`);
           await loadData();
           onDataChange?.(); // إشعار المكون الأب بتغيير البيانات
-          const status = !item.visible ? 'مرئي' : 'مخفي';
-          console.log(`تم تغيير حالة المدرب "${item.name}" إلى ${status}`);
+          const status = newVisibility ? 'مرئي' : 'مخفي';
+          console.log(`📱 المدرب "${item.name}" أصبح ${status} الآن`);
         } else {
           alert('فشل في تغيير حالة الرؤية');
         }
       }
     } catch (error) {
-      console.error('خطأ في تغيير حالة الرؤية:', error);
+      console.error('❌ خطأ في تغيير حالة الرؤية:', error);
       alert('حدث خطأ في تغيير حالة الرؤية');
     }
   };

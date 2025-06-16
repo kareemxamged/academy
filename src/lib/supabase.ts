@@ -210,6 +210,34 @@ export const instructorsService = {
     return data || [];
   },
 
+  // الاشتراك في التحديثات المباشرة للمدربين
+  subscribeToChanges(callback: (payload: any) => void) {
+    const subscription = supabase
+      .channel('instructors_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // جميع الأحداث (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'instructors'
+        },
+        (payload) => {
+          console.log('تحديث في جدول المدربين:', payload);
+          callback(payload);
+        }
+      )
+      .subscribe();
+
+    return subscription;
+  },
+
+  // إلغاء الاشتراك في التحديثات
+  unsubscribeFromChanges(subscription: any) {
+    if (subscription) {
+      supabase.removeChannel(subscription);
+    }
+  },
+
   // إضافة مدرب جديد
   async create(instructor: Omit<Instructor, 'id' | 'created_at' | 'updated_at'>): Promise<Instructor | null> {
     const { data, error } = await supabase
