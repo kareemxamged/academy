@@ -3,7 +3,7 @@
  * Editable Site Data
  */
 
-import { generateWhatsAppLink, generateViberLink, generatePhoneCallLink, formatPhoneNumber } from '../utils/whatsapp';
+import { generateWhatsAppLink, generateViberLink, generatePhoneCallLink } from '../utils/whatsapp';
 
 export interface SiteData {
   // إعدادات عامة - General Settings
@@ -802,7 +802,7 @@ export const updateSocialMediaLinks = (data: SiteData): SiteData => {
         case 'phone':
           return {
             ...item,
-            url: generatePhoneCallLink(whatsappNumber)
+            url: generatePhoneCallLink(data.location.phone || whatsappNumber)
           };
         case 'viber':
           return {
@@ -812,11 +812,8 @@ export const updateSocialMediaLinks = (data: SiteData): SiteData => {
         default:
           return item;
       }
-    }),
-    location: {
-      ...data.location,
-      phone: formatPhoneNumber(whatsappNumber)
-    }
+    })
+    // إزالة تحديث location.phone التلقائي لجعل رقم الهاتف في الموقع مستقل
   };
 };
 
