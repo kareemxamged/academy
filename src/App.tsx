@@ -330,20 +330,7 @@ function App() {
     }
   };
 
-  // دالة لإعادة تحميل إعدادات الموقع (بما في ذلك وسائل التواصل)
-  const reloadSiteSettings = async () => {
-    try {
-      console.log('🔄 إعادة تحميل إعدادات الموقع...');
-      const updatedData = await loadSiteData();
-      if (updatedData) {
-        console.log('✅ تم تحديث إعدادات الموقع بنجاح');
-        // تحديث البيانات المحلية باستخدام setSiteData لضمان إعادة الرسم
-        setSiteData(updatedData);
-      }
-    } catch (error) {
-      console.error('❌ خطأ في إعادة تحميل إعدادات الموقع:', error);
-    }
-  };
+
 
   const loadDynamicData = async () => {
     setIsLoadingDynamic(true);
@@ -378,15 +365,12 @@ function App() {
     setCurrentPage(page as 'home' | 'courses' | 'gallery' | 'instructors' | 'techniques' | 'contact');
   };
 
-  const handleDataChange = async (newData: SiteData) => {
-    // تحديث البيانات المحلية أولاً
+  const handleDataChange = (newData: SiteData) => {
+    // تحديث البيانات المحلية فقط بدون إعادة تحميل
     setSiteData(newData);
 
-    // إعادة تحميل البيانات الديناميكية عند تغيير البيانات في لوحة التحكم
-    await loadDynamicData();
-
-    // إعادة تحميل إعدادات الموقع من قاعدة البيانات للتأكد من التزامن
-    await reloadSiteSettings();
+    // لا نحتاج لإعادة تحميل البيانات هنا لأن ذلك يسبب إعادة رسم المكونات
+    // البيانات محدثة بالفعل في newData
   };
 
   // فحص إذا كانت البيانات محملة
@@ -730,11 +714,10 @@ function App() {
         {/* لوحة التحكم - Admin Panel */}
         <AdminPanel
           isOpen={isAdminOpen}
-          onClose={async () => {
+          onClose={() => {
             setIsAdminOpen(false);
-            // إعادة تحميل البيانات عند إغلاق لوحة التحكم
-            await loadDynamicData();
-            await reloadSiteSettings();
+            // لا نحتاج لإعادة تحميل البيانات عند الإغلاق
+            // البيانات محدثة بالفعل من خلال عمليات الحفظ
           }}
           siteData={safeSiteData}
           onDataChange={handleDataChange}

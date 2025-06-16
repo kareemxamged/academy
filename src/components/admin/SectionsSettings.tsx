@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Edit3, Trash2, Plus, Save, X } from 'lucide-react';
-import { settingsService } from '../../lib/supabase';
 
 interface Section {
   id: string;
@@ -48,50 +47,26 @@ const SectionsSettings: React.FC<SectionsSettingsProps> = ({ data, onUpdate }) =
     { color: 'text-indigo-600', bg: 'bg-indigo-100', name: 'نيلي' },
   ];
 
-  const toggleVisibility = async (id: string) => {
+  const toggleVisibility = (id: string) => {
     const updated = data.map(section =>
       section.id === id ? { ...section, visible: !section.visible } : section
     );
     onUpdate(updated);
-
-    // حفظ فوري في قاعدة البيانات
-    try {
-      await settingsService.update('sections', updated);
-      console.log('✅ تم حفظ تحديث رؤية القسم في قاعدة البيانات');
-    } catch (error) {
-      console.error('❌ خطأ في حفظ تحديث رؤية القسم:', error);
-    }
   };
 
-  const deleteSection = async (id: string) => {
+  const deleteSection = (id: string) => {
     const updated = data.filter(section => section.id !== id);
     onUpdate(updated);
-
-    // حفظ فوري في قاعدة البيانات
-    try {
-      await settingsService.update('sections', updated);
-      console.log('✅ تم حفظ حذف القسم في قاعدة البيانات');
-    } catch (error) {
-      console.error('❌ خطأ في حفظ حذف القسم:', error);
-    }
   };
 
-  const updateSection = async (id: string, field: string, value: any) => {
+  const updateSection = (id: string, field: string, value: any) => {
     const updated = data.map(section =>
       section.id === id ? { ...section, [field]: value } : section
     );
     onUpdate(updated);
-
-    // حفظ فوري في قاعدة البيانات
-    try {
-      await settingsService.update('sections', updated);
-      console.log('✅ تم حفظ تحديث القسم في قاعدة البيانات');
-    } catch (error) {
-      console.error('❌ خطأ في حفظ تحديث القسم:', error);
-    }
   };
 
-  const addSection = async () => {
+  const addSection = () => {
     if (newSection.name && newSection.nameEn) {
       const section: Section = {
         id: Date.now().toString(),
@@ -103,17 +78,7 @@ const SectionsSettings: React.FC<SectionsSettingsProps> = ({ data, onUpdate }) =
         iconBg: newSection.iconBg!,
         visible: newSection.visible!,
       };
-      const updated = [...data, section];
-      onUpdate(updated);
-
-      // حفظ فوري في قاعدة البيانات
-      try {
-        await settingsService.update('sections', updated);
-        console.log('✅ تم حفظ القسم الجديد في قاعدة البيانات');
-      } catch (error) {
-        console.error('❌ خطأ في حفظ القسم الجديد:', error);
-      }
-
+      onUpdate([...data, section]);
       setNewSection({
         name: '',
         nameEn: '',

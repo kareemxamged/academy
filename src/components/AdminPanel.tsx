@@ -149,21 +149,34 @@ interface AdminPanelProps {
 }
 
 const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, siteData, onDataChange }) => {
-  const [activeTab, setActiveTab] = useState<string>('general');
+  // حفظ حالة activeTab في localStorage لتذكر آخر تبويب مفتوح
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    return localStorage.getItem('adminActiveTab') || 'general';
+  });
   const [localData, setLocalData] = useState<SiteData>(siteData);
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [serviceStatus, setServiceStatus] = useState<any>(null);
 
+  // حفظ activeTab في localStorage عند تغييره
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    localStorage.setItem('adminActiveTab', tabId);
+  };
+
   // دالة لإعادة تحميل البيانات الديناميكية فقط
   const handleDynamicDataChange = () => {
-    // إشعار المكون الأب بأن البيانات الديناميكية تغيرت
-    onDataChange(localData);
+    // لا نحتاج لإشعار المكون الأب هنا
+    // البيانات الديناميكية تُدار مباشرة من قاعدة البيانات
+    console.log('🔄 تم تحديث البيانات الديناميكية');
   };
 
   useEffect(() => {
-    setLocalData(siteData);
+    // تحديث البيانات المحلية فقط إذا كانت مختلفة
+    if (JSON.stringify(localData) !== JSON.stringify(siteData)) {
+      setLocalData(siteData);
+    }
   }, [siteData]);
 
   useEffect(() => {
@@ -239,8 +252,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, siteData, onDa
     setLocalData(newData);
     setHasChanges(true);
 
-    // تحديث فوري للبيانات في المكون الأب لضمان التزامن
-    onDataChange(newData);
+    // لا نستدعي onDataChange هنا لتجنب إعادة الرسم
+    // سيتم التحديث عند الحفظ فقط
   };
 
   const tabs = [
@@ -377,7 +390,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, siteData, onDa
                   return (
                     <button
                       key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
+                      onClick={() => handleTabChange(tab.id)}
                       className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-right transition-colors ${
                         activeTab === tab.id
                           ? 'bg-blue-100 text-blue-700 border border-blue-200'
