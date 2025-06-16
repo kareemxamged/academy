@@ -155,6 +155,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, siteData, onDa
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [serviceStatus, setServiceStatus] = useState<any>(null);
 
+  // دالة لإعادة تحميل البيانات الديناميكية فقط
+  const handleDynamicDataChange = () => {
+    // إشعار المكون الأب بأن البيانات الديناميكية تغيرت
+    onDataChange(localData);
+  };
+
   useEffect(() => {
     setLocalData(siteData);
   }, [siteData]);
@@ -393,13 +399,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, siteData, onDa
                 <CoursesSettings />
               )}
               {activeTab === 'gallery' && (
-                <GallerySettings onDataChange={onDataChange} />
+                <GallerySettings onDataChange={handleDynamicDataChange} />
               )}
               {activeTab === 'social' && (
                 <SocialSettings data={localData.socialMedia} onUpdate={(social) => updateData('socialMedia', social)} />
               )}
               {activeTab === 'instructors' && (
-                <InstructorsManagement onDataChange={onDataChange} />
+                <InstructorsManagement onDataChange={handleDynamicDataChange} />
               )}
               {activeTab === 'techniques' && (
                 <TechniquesSettings />
