@@ -15,7 +15,7 @@ import { loadSiteData, defaultSiteData } from './data/siteData';
 import { hoverAnimations, tapAnimations, cssTransitions } from './lib/animations';
 import { instructorsService, coursesService, galleryService, techniquesService } from './lib/supabase';
 import DrawingTechniques from './components/DrawingTechniques';
-import { FloatingWhatsAppButton } from './components/WhatsAppButton';
+// import { FloatingWhatsAppButton } from './components/WhatsAppButton'; // معلق لأن الزر العائم مخفي
 
 // تعريف نوع البيانات محلياً
 interface SiteData {
@@ -706,10 +706,11 @@ function App() {
         <AdminButton onOpenAdmin={() => setIsAdminOpen(true)} />
 
         {/* زر الواتساب العائم - Floating WhatsApp Button */}
-        <FloatingWhatsAppButton
+        {/* تم إخفاء زر الواتساب العائم بناءً على طلب المستخدم */}
+        {/* <FloatingWhatsAppButton
           phoneNumber={safeSiteData.general.whatsappNumber}
           message="مرحباً، أريد الاستفسار عن دورات الرسم في أكاديمية ميمو"
-        />
+        /> */}
 
         {/* لوحة التحكم - Admin Panel */}
         <AdminPanel
