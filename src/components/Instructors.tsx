@@ -38,11 +38,13 @@ const Instructors: React.FC<InstructorsProps> = ({ instructors, whatsappNumber }
   const [showUpdateNotification, setShowUpdateNotification] = useState(false);
   const [previousInstructorsCount, setPreviousInstructorsCount] = useState(instructors.length);
 
-  // تسجيل البيانات المستلمة لمراقبة المشكلة
+  // تسجيل البيانات المستلمة لمراقبة المشكلة (استخدام length لتجنب infinite loop)
   useEffect(() => {
-    console.log('👥 مكون المدربين - البيانات المستلمة:', instructors);
-    console.log('📊 عدد المدربين المستلمين:', instructors.length);
-  }, [instructors]);
+    console.log('👥 مكون المدربين - عدد المدربين المستلمين:', instructors.length);
+    if (instructors.length > 0) {
+      console.log('👥 مكون المدربين - أول مدرب:', instructors[0]);
+    }
+  }, [instructors.length]);
 
   // مراقبة تغييرات في عدد المدربين لإظهار إشعار التحديث
   useEffect(() => {

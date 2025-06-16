@@ -206,6 +206,15 @@ function App() {
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
+  // تسجيل البيانات النهائية للمدربين (بدون dependency على safeSiteData لتجنب infinite loop)
+  useEffect(() => {
+    const finalInstructors = !isLoadingDynamic ? dynamicInstructors : (siteData.instructors || []);
+    console.log('🏠 App.tsx - البيانات النهائية للمدربين:', finalInstructors);
+    console.log('📊 App.tsx - عدد المدربين النهائي:', finalInstructors.length);
+    console.log('⏳ App.tsx - حالة التحميل:', isLoadingDynamic);
+    console.log('💾 App.tsx - المدربين الديناميكيين:', dynamicInstructors);
+  }, [isLoadingDynamic, dynamicInstructors.length]); // استخدام length بدلاً من المصفوفة كاملة
+
   // دالة تحويل بيانات المدربين من قاعدة البيانات إلى تنسيق العرض
   const transformInstructorData = (instructor: any) => ({
     id: instructor.id,
@@ -384,13 +393,7 @@ function App() {
     socialMedia: siteData.socialMedia || []
   };
 
-  // تسجيل البيانات النهائية للمدربين
-  useEffect(() => {
-    console.log('🏠 App.tsx - البيانات النهائية للمدربين:', safeSiteData.instructors);
-    console.log('📊 App.tsx - عدد المدربين النهائي:', safeSiteData.instructors.length);
-    console.log('⏳ App.tsx - حالة التحميل:', isLoadingDynamic);
-    console.log('💾 App.tsx - المدربين الديناميكيين:', dynamicInstructors);
-  }, [safeSiteData.instructors, isLoadingDynamic, dynamicInstructors]);
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 relative overflow-hidden" style={{ minHeight: '100vh' }}>
