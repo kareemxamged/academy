@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ExternalLink, Star, Award, Users, Clock, RefreshCw, CheckCircle } from 'lucide-react';
+import { ExternalLink, Star, Award, Users, Clock, CheckCircle } from 'lucide-react';
 import { hoverAnimations, tapAnimations, cssTransitions } from '../lib/animations';
 import { InstructorWhatsAppButton } from './WhatsAppButton';
 
