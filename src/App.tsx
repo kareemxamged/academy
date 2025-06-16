@@ -311,9 +311,11 @@ function App() {
     try {
       console.log('🔄 إعادة تحميل بيانات المدربين...');
       const instructorsData = await instructorsService.getVisible();
+      console.log('📊 بيانات المدربين من قاعدة البيانات:', instructorsData);
       const transformedInstructors = instructorsData.map(transformInstructorData);
+      console.log('🔄 بيانات المدربين بعد التحويل:', transformedInstructors);
       setDynamicInstructors(transformedInstructors);
-      console.log('✅ تم تحديث بيانات المدربين بنجاح');
+      console.log('✅ تم تحديث بيانات المدربين بنجاح - العدد:', transformedInstructors.length);
     } catch (error) {
       console.error('❌ خطأ في تحميل بيانات المدربين:', error);
     }
@@ -374,12 +376,21 @@ function App() {
   const safeSiteData = {
     ...siteData,
     courses: dynamicCourses.length > 0 ? dynamicCourses : (siteData.courses || []),
-    instructors: dynamicInstructors.length > 0 ? dynamicInstructors : (siteData.instructors || []),
+    // استخدام البيانات من قاعدة البيانات دائماً للمدربين، حتى لو كانت فارغة
+    instructors: !isLoadingDynamic ? dynamicInstructors : (siteData.instructors || []),
     gallery: dynamicGallery.length > 0 ? dynamicGallery : (siteData.gallery || []),
     techniques: dynamicTechniques.length > 0 ? dynamicTechniques : [],
     sections: siteData.sections || [],
     socialMedia: siteData.socialMedia || []
   };
+
+  // تسجيل البيانات النهائية للمدربين
+  useEffect(() => {
+    console.log('🏠 App.tsx - البيانات النهائية للمدربين:', safeSiteData.instructors);
+    console.log('📊 App.tsx - عدد المدربين النهائي:', safeSiteData.instructors.length);
+    console.log('⏳ App.tsx - حالة التحميل:', isLoadingDynamic);
+    console.log('💾 App.tsx - المدربين الديناميكيين:', dynamicInstructors);
+  }, [safeSiteData.instructors, isLoadingDynamic, dynamicInstructors]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 relative overflow-hidden" style={{ minHeight: '100vh' }}>
